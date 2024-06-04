@@ -25,22 +25,10 @@ This topic covers:
 
 Make sure you have [Node.js](https://nodejs.org/) installed. Then run:
 
-```bash
-npm install -g @vscode/vsce
-```
 
 ### Usage
 
-You can use `vsce` to easily [package](#packaging-extensions) and [publish](#publishing-extensions) your extensions:
-
-```bash
-$ cd myExtension
-$ vsce package
-# myExtension.vsix generated
-$ vsce publish
-# <publisher id>.myExtension published to VS Code Marketplace
-```
-
+You can use `vsce` to easily [package](#packaging-extensions) and [publish](#publishing-extensions) your
 `vsce` can also search, retrieve metadata, and unpublish extensions. For a reference on all the available `vsce` commands, run `vsce --help`.
 
 ## Publishing extensions
@@ -147,16 +135,6 @@ The [Visual Studio Marketplace publisher management page](https://marketplace.vi
 ## Auto-increment the extension version
 
 When publishing an extension, you can auto-increment its version number by specifying the [SemVer](https://semver.org/)-compatible number or version (`major`, `minor`, or `patch`) to increment. For example, to update an extension's version from 1.0.0 to 1.1.0, you would specify:
-
-```bash
-vsce publish minor
-```
-
-or
-
-```bash
-vsce publish 1.1.0
-```
 
 Both commands will first modify the extension's `package.json` [version](/api/references/extension-manifest#fields) attribute and then publish it with the updated version.
 

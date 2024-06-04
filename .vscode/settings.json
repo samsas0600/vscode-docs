@@ -4,7 +4,7 @@
     "main"
   ],
   "git.branchProtectionPrompt": "alwaysCommitToNewBranch",
-  "editor.wordWrap": "on",
+  "editor.wordWrap": "\n",
     "files.eol": "\n",
     "files.trimTrailingWhitespace": true,
     "files.associations": {
@@ -12,8 +12,7 @@
     },
     "markdown.validate.enabled": true,
     "markdown.validate.ignoredLinks": [
-        "/Download",
-        "/insiders"
+           "/insiders"
     ],
     "markdown.copyFiles.destination": {
         // /release-notes/v123.md -> /release-notes/images/123/img.png

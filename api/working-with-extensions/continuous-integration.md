@@ -7,10 +7,6 @@ DateApproved: 05/02/2024
 MetaDescription: Use Continuous Integration for testing Visual Studio Code extensions (plug-ins).
 ---
 
-# Continuous Integration
-
-Extension integration tests can be run on CI services. The [`@vscode/test-electron`](https://github.com/microsoft/vscode-test) library helps you set up extension tests on CI providers and contains a [sample extension](https://github.com/microsoft/vscode-test/tree/main/sample) setup on Azure Pipelines. You can check out the [build pipeline](https://dev.azure.com/vscode/vscode-test/_build?definitionId=15) or jump directly to the [`azure-pipelines.yml` file](https://github.com/microsoft/vscode-test/blob/main/sample/azure-pipelines.yml).
-
 ## Automated publishing
 
 You can also configure the CI to publish a new version of the extension automatically.
@@ -32,34 +28,12 @@ trigger:
   branches:
     include:
     - main
-  tags:
-    include:
-    - v*
-
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-latest'
-    mac:
-      imageName: 'macos-latest'
-    windows:
-      imageName: 'windows-latest'
-
+\
 pool:
   vmImage: $(imageName)
 
 steps:
 
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
-
-- bash: |
-    /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-    echo ">>> Started xvfb"
-  displayName: Start xvfb
-  condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
 
 - bash: |
     echo ">>> Compile vscode-test"
@@ -70,7 +44,7 @@ steps:
     yarn && yarn compile && yarn test
   displayName: Run Tests
   env:
-    DISPLAY: ':99.0'
+
 ```
 
 Finally, [create a new pipeline](https://learn.microsoft.com/azure/devops/pipelines/create-first-pipeline) in your DevOps project and point it to the `azure-pipelines.yml` file. Trigger a build and voilà:
@@ -91,29 +65,8 @@ You can enable the build to run continuously when pushing to a branch and even o
 }
 ```
 
-4. Configure the CI so the build will also run when tags are created:
-
-```yaml
-trigger:
-  branches:
-    include:
-    - main
-  tags:
-    include:
-    - refs/tags/v*
-```
-
-5. Add a `publish` step in `azure-pipelines.yml` that calls `yarn deploy` with the secret variable.
-
-```yaml
-- bash: |
-    echo ">>> Publish"
-    yarn deploy
-  displayName: Publish
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['Agent.OS'], 'Linux'))
-  env:
-    VSCE_PAT: $(VSCE_PAT)
-```
+4
+``
 
 The [condition](https://learn.microsoft.com/azure/devops/pipelines/process/conditions) property tells the CI to run the publish step only in certain cases.
 
@@ -129,24 +82,7 @@ Since `VSCE_PAT` is a secret variable, it is not immediately usable as an enviro
 
 You can also configure GitHub Actions to run your extension CI. In headless Linux CI machines `xvfb` is required to run VS Code, so if Linux is the current OS run the tests in an Xvfb enabled environment:
 
-```yaml
-on:
-  push:
-    branches:
-      - main
 
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-    runs-on: $\{{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Install Node.js
-      uses: actions/setup-node@v4
-      with:
         node-version: 18.x
     - run: npm install
     - run: xvfb-run -a npm test
@@ -169,26 +105,11 @@ jobs:
 
 4. Configure the CI so the build will also run when tags are created:
 
-```yaml
-on:
-  push:
-    branches:
-    - main
-  release:
-    types:
-    - created
-```
-
 5. Add a `publish` job to the pipeline that calls `npm run deploy` with the secret variable.
 
 ```yaml
 - name: Publish
-  if: success() && startsWith(github.ref, 'refs/tags/') && matrix.os == 'ubuntu-latest'
-  run: npm run deploy
-  env:
-    VSCE_PAT: $\{{ secrets.VSCE_PAT }}
-```
-
+  if:
 The [if](https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idif) property tells the CI to run the publish step only in certain cases.
 
 In our example, the condition has three checks:
@@ -200,19 +121,6 @@ In our example, the condition has three checks:
 ## GitLab CI
 
 GitLab CI can be used to test and publish the extension in headless Docker containers. This can be done by pulling a preconfigured Docker image, or installing `xvfb` and the libraries required to run Visual Studio Code during the pipeline.
-
-```yaml
-image: node:12-buster
-
-before_script:
-  - npm install
-
-test:
-  script:
-    - |
-      apt update
-      apt install -y libasound2 libgbm1 libgtk-3-0 libnss3 xvfb
-      xvfb-run -a npm run test
 ```
 
 ### GitLab CI automated publishing
@@ -231,11 +139,7 @@ test:
 
 ```yaml
 deploy:
-  only:
-    - tags
-  script:
-    - npm run deploy
-```
+  on
 
 ## Common questions
 

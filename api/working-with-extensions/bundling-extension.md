@@ -31,15 +31,6 @@ You can run esbuild from the command line but to reduce repetition, using npm sc
 
 Merge these entries into the `scripts` section in `package.json`:
 
-```json
-"scripts": {
-    "vscode:prepublish": "npm run esbuild-base -- --minify",
-    "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
-    "esbuild": "npm run esbuild-base -- --sourcemap",
-    "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-    "test-compile": "tsc -p ./"
-},
-```
 
 The `esbuild` and `esbuild-watch` scripts are for development and they produce the bundle file. The `vscode:prepublish` is used by `vsce`, the VS Code packaging and publishing tool, and run before publishing an extension. Passing the `--minify` flag and no `--sourcemap` compresses the code and creates a small bundle, but also makes debugging hard, so other flags are used during development. To run above scripts, open a terminal and type `npm run esbuild` or select **Tasks: Run Task** from the Command Palette (`kb(workbench.action.showCommands)`).
 
@@ -51,79 +42,24 @@ Jump down to the [Tests](#tests) section to continue reading.
 
 Webpack is a development tool that's available from [npm](https://www.npmjs.com). To acquire webpack and its command line interface, open the terminal and type:
 
-```bash
-npm i --save-dev webpack webpack-cli
-```
 
 This will install webpack and update your extension's `package.json` file to include webpack in the `devDependencies`.
 
 Webpack is a JavaScript bundler but many VS Code extensions are written in TypeScript and only compiled to JavaScript. If your extension is using TypeScript, you can use the loader `ts-loader`, so that webpack can understand TypeScript. Use the following to install `ts-loader`:
 
-```bash
-npm i --save-dev ts-loader
-```
 
 ### Configure webpack
 
 With all tools installed, webpack can now be configured. By convention, a `webpack.config.js` file contains the configuration to instruct webpack to bundle your extension. The sample configuration below is for VS Code extensions and should provide a good starting point:
-
-```javascript
-//@ts-check
-
-'use strict';
-
-const path = require('path');
-const webpack = require('webpack');
-
-/**@type {import('webpack').Configuration}*/
-const config = {
-    target: 'webworker', // vscode extensions run in webworker context for VS Code web 📖 -> https://webpack.js.org/configuration/target/#target
-
-    entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
-    output: { // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'extension.js',
-        libraryTarget: "commonjs2",
-        devtoolModuleFilenameTemplate: "../[resource-path]",
-    },
-    devtool: 'source-map',
-    externals: {
-        vscode: "commonjs vscode" // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    },
-    resolve: { // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
-        mainFields: ['browser', 'module', 'main'], // look for `browser` entry point in imported node modules
-        extensions: ['.ts', '.js'],
-        alias: {
-            // provides alternate implementation for node module and source files
-        },
-        fallback: {
-            // Webpack 5 no longer polyfills Node.js core modules automatically.
-            // see https://webpack.js.org/configuration/resolve/#resolvefallback
-            // for the list of Node.js core module polyfills.
-        }
-    },
-    module: {
-        rules: [{
-            test: /\.ts$/,
-            exclude: /node_modules/,
-            use: [{
-                loader: 'ts-loader',
-            }]
-        }]
-    },
-}
-module.exports = config;
-```
-
-The file is [available](https://github.com/microsoft/vscode-extension-samples/blob/main/webpack-sample/webpack.config.js) as part of the [webpack-extension](https://github.com/microsoft/vscode-extension-samples/blob/main/webpack-sample) sample. Webpack configuration files are normal JavaScript modules that must export a configuration object.
+(https://github.com/microsoft/vscod-extension-samples/blob/main/webpack-sample/webpack.config.js) as part of the [webpack-extension](https://github.com/microsoft/vsode-extension-samples/blob/main/webpack-sample) sample. Webpack configuration files are normal JavaScript modules that must export a configuration object.
 
 In the sample above, the following are defined:
 
-* The `target` indicates which context your extension will run. We recommend using `webworker` so that your extension will work both in VS Code for web and VS Code desktop versions.
-* The entry point webpack should use. This is similar to the `main` property in `package.json` except that you provide webpack with a "source" entry point, usually `src/extension.ts`, and not an "output" entry point. The webpack bundler understands TypeScript, so a separate TypeScript compile step is redundant.
-* The `output` configuration tells webpack where to place the generated bundle file. By convention, that is the `dist` folder. In this sample, webpack will produce a `dist/extension.js` file.
-* The `resolve` and `module/rules` configurations are there to support TypeScript and JavaScript input files.
-* The `externals` configuration is used to declare exclusions, for example files and modules that should not be included in the bundle. The `vscode` module should not be bundled because it doesn't exist on disk but is created by VS Code on-the-fly when required. Depending on the node modules that an extension uses, more exclusion may be necessary.
+The `target` indicates which context your extension will run. We recommend using `webworker` so that your extension will work both in VS Code for web and VS Code desktop versions.
+The entry point webpack should use. This is similar to the `main` property in `package.json` except that you provide webpack with a "source" entry point, usually `src/extension.ts`, and not an "output" entry point. The webpack bundler understands TypeScript, so a separate TypeScript compile step is redundant.
+The `output` configuration tells webpack where to place the generated bundle file. By convention, that is the `dist` folder. In this sample, webpack will produce a `dist/extension.js` file.
+The `resolve` and `module/rues` configurations are there to support TypeScript and JavaScript input files.
+The `externals` configuration is used to declare exclusions, for example files and modules that should not be included in the bundle. The `vscode` module should not be bundled because it doesn't exist on disk but is created by VS Code on-the-fly when required. Depending on the node modules that an extension uses, more exclusion may be necessary.
 
 Finally, you will want to update your `.vscodeignore` file so that compiled files are included in the published extension. Check out the [Publishing](#Publishing) section for more details.
 
@@ -133,42 +69,13 @@ With the `webpack.config.js` file created, webpack can be invoked. You can run w
 
 Merge these entries into the `scripts` section in `package.json`:
 
-```json
-"scripts": {
-    "vscode:prepublish": "npm run package",
-    "webpack": "webpack --mode development",
-    "webpack-dev": "webpack --mode development --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "test-compile": "tsc -p ./"
-},
-```
 
 The `webpack` and `webpack-dev` scripts are for development and they produce the bundle file. The `vscode:prepublish` is used by `vsce`, the VS Code packaging and publishing tool, and run before publishing an extension. The difference is in the [mode](https://webpack.js.org/concepts/mode/) and that controls the level of optimization. Using `production` yields the smallest bundle but also takes longer, so else `development` is used. To run above scripts, open a terminal and type `npm run webpack` or select **Tasks: Run Task** from the Command Palette (`kb(workbench.action.showCommands)`).
-
-## Run the extension
-
-Before you can run the extension, the `main` property in `package.json` must point to the bundle, which for the configuration above is [`"./dist/extension"`](https://github.com/microsoft/vscode-references-view/blob/d649d01d369e338bbe70c86e03f28269cbf87027/package.json#L26). With that change, the extension can now be executed and tested.
 
 ## Tests
 
 Extension authors often write unit tests for their extension source code. With the correct architectural layering, where the extension source code doesn't depend on tests, the webpack produced bundle shouldn't contain any test code. To run unit tests, only a simple compile is necessary. In the sample, there is a `test-compile` script, which uses the TypeScript compiler to compile the extension into the `out` folder. With that intermediate JavaScript available, the following snippet for `launch.json` is enough to run tests.
 
-```json
-{
-    "name": "Extension Tests",
-    "type": "extensionHost",
-    "request": "launch",
-    "runtimeExecutable": "${execPath}",
-    "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test"
-    ],
-    "outFiles": [
-        "${workspaceFolder}/out/test/**/*.js"
-    ],
-    "preLaunchTask": "npm: test-compile"
-}
-```
 
 This configuration for running tests is the same for non-webpacked extensions. There is no reason to webpack unit tests because they are not part of the published portion of an extension.
 
@@ -178,7 +85,6 @@ Before publishing, you should update the `.vscodeignore` file. Everything that's
 
 A typical `.vscodeignore` file looks like this:
 
-```bash
 .vscode
 node_modules
 out/
