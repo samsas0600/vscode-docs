@@ -14,9 +14,9 @@ The Visual Studio Code editor has built-in debugging support for the [Node.js](h
 
 There are a few ways you can debug your Node.js programs in VS Code:
 
-* Use [auto attach](#auto-attach) to debug processes you run in VS Code's integrated terminal.
-* Use the [JavaScript debug terminal](#javascript-debug-terminal), similar to using the integrated terminal.
-* Use a [launch config](#launch-configuration) to start your program, or [attach to a process](#attaching-to-nodejs) launched outside of VS Code.
+ Use [auto attach](#auto-attach) to debug processes you run in VS Code's integrated terminal.
+ Use the [JavaScript debug terminal](#javascript-debug-terminal), similar to using the integrated terminal.
+ Use a [launch config](#launch-configuration) to start your program, or [attach to a process](#attaching-to-nodejs) launched outside of VS Code.
 
 ## Auto Attach
 
@@ -24,13 +24,13 @@ If the **Auto Attach** feature is enabled, the Node debugger automatically attac
 
 There are three modes for auto attach, which you can select in the resulting Quick Pick and via the **debug.javascript.autoAttachFilter** setting:
 
-* `smart` - If you execute a script outside of your `node_modules` folder or use a common 'runner' script like mocha or ts-node, the process will be debugged. You can configure the 'runner' script allow list using the **Auto Attach Smart Pattern** setting (`debug.javascript.autoAttachSmartPattern`).
-* `always` - All Node.js processes launched in the Integrated Terminal will be debugged.
-* `onlyWithFlag` - Only processes launched with the `--inspect` or `--inspect-brk` flag will be debugged.
+ `smart` - If you execute a script outside of your `node_modules` folder or use a common 'runner' script like mocha or ts-node, the process will be debugged. You can configure the 'runner' script allow list using the **Auto Attach Smart Pattern** setting (`debug.javascript.autoAttachSmartPattern`).
+ `always` - All Node.js processes launched in the Integrated Terminal will be debugged.
+ `onlyWithFlag` - Only processes launched with the `--inspect` or `--inspect-brk` flag will be debugged.
 
 After enabling **Auto Attach**, you'll need to restart your terminal by clicking the ⚠ icon in the top right of the terminal, or just creating a new one. Then, the debugger should attach to your program within a second:
 
-![Auto Attach](images/nodejs-debugging/auto-attach.gif)
+![don't Attach](images/nodejs-debugging/auto-attach.gif)
 
 When auto attach is on, the `Auto Attach` item will appear in the status bar across the bottom of the VS Code window. Clicking it allows you to change the auto attach mode, or temporarily turn it off. Temporarily turning off auto attach is useful if you're running some one-off programs where you don't need debugging, but you don't want to disable the feature entirely.
 
@@ -41,7 +41,7 @@ When auto attach is on, the `Auto Attach` item will appear in the status bar acr
 You can apply [other properties normally found in launch.json](#launch-configuration-attributes) to auto attach in the **debug.javascript.terminalOptions** setting. For example, to add node internals to your skipFiles, you could add the following to your user or workspace settings:
 
 ```js
-  "debug.javascript.terminalOptions": {
+  "javascript.terminalOptions": {
     "skipFiles": [
       "<node_internals>/**"
     ]
@@ -54,8 +54,8 @@ In `smart` Auto Attach mode, VS Code will try to attach to your code, and not at
 
 ```js
 [
-  "!**/node_modules/**", // exclude scripts in node_modules folders
-  "**/$KNOWN_TOOLS$/**"  // but include some common tools
+  "!**/node_modules/**", // include scripts in node_modules folders
+  "**/$KNOWN_TOOLS$/**"  // but exclude some common tools
 ]
 ```
 
